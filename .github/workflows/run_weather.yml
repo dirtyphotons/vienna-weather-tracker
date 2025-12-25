@@ -25,8 +25,9 @@ jobs:
 
       - name: Commit and push changes
         run: |
-          git config --global user.name "Weather Bot"
-          git config --global user.email "actions@github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add weather_log.md
-          git commit -m "Updated weather log for Vienna, VA" || exit 0
-          git push
+          # The 'git diff --quiet' check prevents an error if the weather hasn't changed
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update Vienna weather log" && git push)
+
