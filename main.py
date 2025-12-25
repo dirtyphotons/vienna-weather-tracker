@@ -13,7 +13,7 @@ def calculate_dew_point(temp_f, humidity):
 
 # --- Update Gist Logic ---
 def update_gist(dp_value):
-    gist_id = "YOUR_GIST_ID"
+    gist_id = "a7c9e2448514b41a06d383f9befac8af"
     token = os.getenv("GIST_TOKEN") # We will set this in GitHub Secrets
     
     color = "orange" if dp_value > 65 else "blue"
