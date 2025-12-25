@@ -2,32 +2,48 @@ name: Update Weather Log
 
 on:
   schedule:
-    - cron: '0 * * * *' # Runs every hour
-  workflow_dispatch:      # Allows you to run it manually
+    - cron: '0 * * * *' # Runs at the start of every hour
+  workflow_dispatch:      # Allows you to click "Run workflow" manually for testing
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    # This block is critical for allowing the bot to write to your repo
+    permissions:
+      contents: write
 
-      - name: Set up Python
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Python environment
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
 
-      - name: Run script
+      - name: Run Weather Script
+        env:
+          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
         run: python main.py
 
-      - name: Commit and push changes
+      - name: Commit and Push changes
         run: |
+          # Set identity to the standard GitHub bot
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # Stage the log file
           git add weather_log.md
-          # The 'git diff --quiet' check prevents an error if the weather hasn't changed
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update Vienna weather log" && git push)
-
+          
+          # Only commit and push if there are actually changes to the log
+          if git diff --staged --quiet; then
+            echo "No changes in weather data; skipping commit."
+          else
+            git commit -m "Update Vienna weather log [skip ci]"
+            git push
+          fi
